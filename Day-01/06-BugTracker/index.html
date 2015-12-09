@@ -37,13 +37,26 @@
     11. Categorize the bugs
     12. Allow the user to navigate by category
     -->
+    <script src="angular.min.js"></script>
+    <script>
+        var bugTrackerApp = angular.module("bugTrackerApp", []);
+        bugTrackerApp.controller("bugsController", function($scope){
+            $scope.bugs = [
+                "User authentication failure",
+                "Server communication erratic",
+                "Control alignment not right"
+            ];
+            $scope.newBug = '';
+        });
+
+    </script>
 </head>
-<body>
+<body ng-app="bugTrackerApp">
     <h1>Bug Tracker</h1>
     <hr>
-    <section class="content">
+    <section class="content" ng-controller="bugsController">
         <div class="stats">
-            <span class="closed">3</span> / <span>5</span>
+            <span class="closed">3</span> / <span>{{bugs.length}}</span>
         </div>
         <div class="sort">
             <label for="">Order By :</label>
@@ -66,9 +79,7 @@
         </div>
         <div class="list">
             <ol>
-                <li>User authentication failure</li>
-                <li>Server communication erratic</li>
-                <li class="closed">Control alignment not right</li>
+
             </ol>
         </div>
     </section>
