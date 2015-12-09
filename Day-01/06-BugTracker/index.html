@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Tracker</title>
+    <style>
+        .closed {
+            color : red;
+            text-decoration: line-through;
+            font-style: italic;
+            font-weight: bold;
+        }
+        .stats{
+            font-size: 18pt;
+            font-weight: bold;
+        }
+        div{
+            margin-bottom: 10px;
+        }
+        li{
+            cursor: pointer;
+        }
+    </style>
+    <!--
+    Use Cases
+    ==========
+    1. List the bugs
+    2. Add a new bug
+    3. Toggle the completion status of a bug
+    4. Remove closed bugs
+    5. Search for bug
+    6. Sort the bug
+    7. Improvise the bug display
+    8. Display the 'createdAt' for all the bugs
+    9. Persist the bugs in 'localStorage'
+    10. Persist the bugs in the server
+    11. Categorize the bugs
+    12. Allow the user to navigate by category
+    -->
+</head>
+<body>
+    <h1>Bug Tracker</h1>
+    <hr>
+    <section class="content">
+        <div class="stats">
+            <span class="closed">3</span> / <span>5</span>
+        </div>
+        <div class="sort">
+            <label for="">Order By :</label>
+            <input type="text" name="" id="">
+            <label for="">Descending ? :</label>
+            <input type="checkbox" name="" id="">
+        </div>
+        <div class="filter">
+            <label for="">Search :</label>
+            <input type="text" name="" id="">
+            <label for="">Closed?</label>
+            <input type="checkbox" name="" id="">
+            <input type="button" value="Show All">
+        </div>
+        <div class="edit">
+            <label for="">Bug :</label>
+            <input type="text" name="" id="">
+            <input type="button" value="Add New">
+            <input type="button" value="Remove Closed">
+        </div>
+        <div class="list">
+            <ol>
+                <li>User authentication failure</li>
+                <li>Server communication erratic</li>
+                <li class="closed">Control alignment not right</li>
+            </ol>
+        </div>
+    </section>
+</body>
+</html>
