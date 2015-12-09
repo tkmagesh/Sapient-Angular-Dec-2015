@@ -30,17 +30,29 @@
             }
         });
 
+        myApp.controller("appController", function($scope){
+            $scope.transactionCount = 0;
+            $scope.incrementTransactionCount = function(){
+                ++$scope.transactionCount;
+            }
+        });
+
         myApp.controller("calculatorController", function($scope, calculator){
             $scope.calculator = calculator;
             $scope.operation = null;
             $scope.calculate = function(){
+                $scope.incrementTransactionCount();
                 calculator[$scope.operation]();
             }
         });
 
+        myApp.controller("summaryController", function($scope){
+
+        })
+
     </script>
 </head>
-<body ng-app="myApp">
+<body ng-app="myApp" ng-controller="appController">
     <h1>Calculator</h1>
     <hr>
     <div class="content" ng-controller="calculatorController">
@@ -53,10 +65,10 @@
         </select>
         <input type="text" ng-model="calculator.number2">
         <input type="button" value="Calculate" ng-click="calculate()">
-        <div id="divResult" ng-bind="calculator.result">[Result]</div>
+        <div id="divResult" >{{calculator.result}}</div>
     </div>
-    <div class="summary">
-        <span>Total Transactions : 0</span>
+    <div class="summary" ng-controller="summaryController">
+        <span>Total Transactions : <span>{{transactionCount}}</span></span>
     </div>
 </body>
 </html>
