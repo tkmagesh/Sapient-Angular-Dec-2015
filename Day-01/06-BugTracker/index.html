@@ -24,10 +24,10 @@
     <!--
     Use Cases
     ==========
-    1. List the bugs
-    2. Add a new bug
-    3. Toggle the completion status of a bug
-    4. Remove closed bugs
+    1. List the bugs - done
+    2. Add a new bug - done
+    3. Toggle the completion status of a bug - done
+    4. Remove closed bugs - done
     5. Search for bug
     6. Sort the bug
     7. Improvise the bug display
@@ -42,11 +42,27 @@
         var bugTrackerApp = angular.module("bugTrackerApp", []);
         bugTrackerApp.controller("bugsController", function($scope){
             $scope.bugs = [
-                "User authentication failure",
-                "Server communication erratic",
-                "Control alignment not right"
+                {name : "User authentication failure", isClosed : false},
+                {name : "Server communication erratic", isClosed : false},
+                {name : "Control alignment not right", isClosed : false},
             ];
-            $scope.newBug = '';
+            $scope.newBugName = '';
+            $scope.addNew = function(){
+                var newBug = {
+                    name : $scope.newBugName,
+                    isClosed : false
+                };
+                $scope.bugs.push(newBug);
+                $scope.newBugName = '';
+            };
+            $scope.toggle = function(bug){
+                bug.isClosed = !bug.isClosed;
+            };
+            $scope.removeClosed = function(){
+                for(var i=$scope.bugs.length -1; i>= 0; i--)
+                    if ($scope.bugs[i].isClosed)
+                        $scope.bugs.splice(i,1);
+            };
         });
 
     </script>
@@ -73,13 +89,13 @@
         </div>
         <div class="edit">
             <label for="">Bug :</label>
-            <input type="text" name="" id="">
-            <input type="button" value="Add New">
-            <input type="button" value="Remove Closed">
+            <input type="text" ng-model="newBugName">
+            <input type="button" value="Add New" ng-click="addNew()">
+            <input type="button" value="Remove Closed" ng-click="removeClosed()">
         </div>
         <div class="list">
             <ol>
-
+                <li ng-repeat="bug in bugs track by $index" ng-click="toggle(bug)">{{bug}}</li>
             </ol>
         </div>
     </section>
