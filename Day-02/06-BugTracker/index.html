@@ -18,7 +18,24 @@
             margin-bottom: 10px;
         }
         li{
+            border: 1px solid grey;
+            background-color: #e7e7e7;
+            padding: 5px;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        li span.name{
+            font-size: 18pt;
             cursor: pointer;
+        }
+        li span.date{
+            display: block;
+            font-style: italic;
+            font-size: small;
+        }
+        ol{
+            list-style: none;
+            width: 60%;
         }
     </style>
     <!--
@@ -30,7 +47,7 @@
     4. Remove closed bugs - done
     5. Search for bug - done
     6. Sort the bug - done
-    7. Improvise the bug display
+    7. Improvise the bug display - done
     8. Display the 'createdAt' for all the bugs
     9. Persist the bugs in 'localStorage'
     10. Persist the bugs in the server
@@ -50,9 +67,10 @@
         });*/
 
         bugTrackerApp.factory("Bug", function(){
-            function Bug(name, isClosed){
-                this.name = name;
-                this.isClosed = isClosed || false;
+            function Bug(defaults){
+                this.name = defaults.name || '';
+                this.isClosed = defaults.isClosed || false;
+                this.createdAt = defaults.createdAt || new Date();
             }
             Bug.prototype.toggle = function(){
                 this.isClosed = !this.isClosed;
@@ -62,23 +80,18 @@
 
         bugTrackerApp.factory("bugsCollection", function(Bug){
             var list = [
-                new Bug("User authentication failure"),
-                new Bug("Server communication erratic", true),
-                new Bug("Control alignment not right"),
+                new Bug({ name : "User authentication failure"}),
+                new Bug({ name : "Server communication erratic", isCompleted : true}),
+                new Bug({ name : "Control alignment not right"}),
             ];
             function add(name){
-                var newBug = new Bug(name);
+                var newBug = new Bug({name : name});
                 list.push(newBug);
             }
             function removeClosed(){
                 for(var i=list.length -1; i>= 0; i--)
                     if (list[i].isClosed)
                         list.splice(i,1);
-            }
-            function getClosedCount(){
-                return list.reduce(function(result, bug){
-                    return bug.isClosed ? ++result : result;
-                },0);
             }
             function toggle(bug){
                 bug.toggle();
@@ -88,7 +101,6 @@
                 add : add,
                 toggle : toggle,
                 removeClosed : removeClosed,
-                getClosedCount : getClosedCount
             }
         });
 
@@ -109,7 +121,13 @@
             }
         });
 
-
+        bugTrackerApp.filter("toClosedCount", function(){
+            return function(bugs){
+                return bugs.reduce(function(result, bug){
+                    return bug.isClosed ? ++result : result;
+                },0);
+            }
+        });
 
     </script>
 </head>
@@ -118,7 +136,9 @@
     <hr>
     <section class="content" ng-controller="bugsController">
         <div class="stats">
-            <span class="closed">{{bugs.getClosedCount()}}</span> / <span>{{bugs.list.length}}</span>
+            <span class="closed">{{bugs.list | toClosedCount}}</span>
+            /
+            <span>{{bugs.list.length}}</span>
         </div>
         <div class="sort">
             <label for="">Order By :</label>
@@ -142,10 +162,15 @@
         <div class="list">
             <ol>
                 <li
-                    ng-repeat="bug in bugs.list | orderBy:sortBy:sortOrder | filter:searchBug"
-                    ng-click="bugs.toggle(bug)"
-                    ng-class="{closed : bug.isClosed}"
-                >{{bug.name | trimText}}</li>
+                    ng-repeat="bug in bugs.list | orderBy:sortBy:sortOrder | filter:searchBug">
+                    <span class="name" ng-click="bugs.toggle(bug)"
+                    ng-class="{closed : bug.isClosed}">
+                         {{bug.name | trimText}}
+                    </span>
+                    <span class="date">
+                        {{bug.createdAt | date}}
+                    </span>
+                </li>
             </ol>
         </div>
     </section>
