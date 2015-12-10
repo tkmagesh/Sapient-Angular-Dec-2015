@@ -49,15 +49,18 @@
             }
         });*/
 
-        function Bug(name){
-            this.name = name;
-            this.isClosed = false;
-        }
-        Bug.prototype.toggle = function(){
-            this.isClosed = !this.isClosed;
-        }
+        bugTrackerApp.factory("Bug", function(){
+            function Bug(name){
+                this.name = name;
+                this.isClosed = false;
+            }
+            Bug.prototype.toggle = function(){
+                this.isClosed = !this.isClosed;
+            };
+            return Bug;
+        });
 
-        bugTrackerApp.controller("bugsController", function($scope/*, Bug*/){
+        bugTrackerApp.controller("bugsController", function($scope, Bug){
             $scope.bugs = [
                 new Bug("User authentication failure"),
                 new Bug("Server communication erratic"),
