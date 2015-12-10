@@ -60,35 +60,46 @@
             return Bug;
         });
 
-        bugTrackerApp.controller("bugsController", function($scope, Bug){
-            $scope.bugs = [
+        bugTrackerApp.factory("bugsCollection", function(Bug){
+            var list = [
                 new Bug("User authentication failure"),
                 new Bug("Server communication erratic"),
                 new Bug("Control alignment not right"),
             ];
-            $scope.newBugName = '';
-            $scope.addNew = function(){
-                var newBug = {
-                    name : $scope.newBugName,
-                    isClosed : false
-                };
-                $scope.bugs.push(newBug);
-                $scope.newBugName = '';
-            };
-            $scope.toggle = function(bug){
-                //bug.isClosed = !bug.isClosed;
-                bug.toggle();
-            };
-            $scope.removeClosed = function(){
-                for(var i=$scope.bugs.length -1; i>= 0; i--)
-                    if ($scope.bugs[i].isClosed)
-                        $scope.bugs.splice(i,1);
-            };
-            $scope.getClosedCount = function(){
-                return $scope.bugs.reduce(function(result, bug){
+            function add(name){
+                var newBug = new Bug(name);
+                list.push(newBug);
+            }
+            function removeClosed(){
+                for(var i=list.length -1; i>= 0; i--)
+                    if (list[i].isClosed)
+                        list.splice(i,1);
+            }
+            function getClosedCount(){
+                return list.reduce(function(result, bug){
                     return bug.isClosed ? ++result : result;
                 },0);
+            }
+            function toggle(bug){
+                bug.toggle();
+            }
+            return {
+                list : list,
+                add : add,
+                toggle : toggle,
+                removeClosed : removeClosed,
+                getClosedCount : getClosedCount
+            }
+        });
+
+        bugTrackerApp.controller("bugsController", function($scope, bugsCollection){
+            $scope.newBugName = '';
+            $scope.bugs = bugsCollection;
+            $scope.addNew = function(){
+                bugsCollection.add($scope.newBugName);
+                $scope.newBugName = '';
             };
+
         });
 
     </script>
@@ -98,7 +109,7 @@
     <hr>
     <section class="content" ng-controller="bugsController">
         <div class="stats">
-            <span class="closed">{{getClosedCount()}}</span> / <span>{{bugs.length}}</span>
+            <span class="closed">{{bugs.getClosedCount()}}</span> / <span>{{bugs.list.length}}</span>
         </div>
         <div class="sort">
             <label for="">Order By :</label>
@@ -117,13 +128,13 @@
             <label for="">Bug :</label>
             <input type="text" ng-model="newBugName">
             <input type="button" value="Add New" ng-click="addNew()">
-            <input type="button" value="Remove Closed" ng-click="removeClosed()">
+            <input type="button" value="Remove Closed" ng-click="bugs.removeClosed()">
         </div>
         <div class="list">
             <ol>
                 <li
-                    ng-repeat="bug in bugs"
-                    ng-click="toggle(bug)"
+                    ng-repeat="bug in bugs.list"
+                    ng-click="bugs.toggle(bug)"
                     ng-class="{closed : bug.isClosed}"
                 >{{bug}}</li>
             </ol>
