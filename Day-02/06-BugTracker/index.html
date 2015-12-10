@@ -89,8 +89,37 @@
             }
         });*/
 
+        bugTrackerApp.factory("bugStorageService", function(Bug, $window){
+            var storage = $window.localStorage;
+            var maxBugId = 0;
+            return {
+                getAll : function(){
+                    var result = [];
+                    for(var i=0; i<storage.length; i++){
+                        var key = storage.key(i);
+                        var bugAsString = storage.getItem(key);
+                        var bug = new Bug(angular.fromJson(bugAsString));
+                        maxBugId = maxBugId < bug.id ? bug.id : maxBugId;
+                        result.push(bug);
+                    }
+                    return result;
+                },
+                save : function(bug){
+                    if (bug.id === 0){
+                        bug.id = ++maxBugId;
+                    }
+                    storage.setItem(bug.id, angular.toJson(bug));
+                    return bug;
+                },
+                remove : function(id){
+                    storage.removeItem(id);
+                }
+            }
+        });
+
         bugTrackerApp.factory("Bug", function(){
             function Bug(defaults){
+                this.id = defaults.id || 0;
                 this.name = defaults.name || '';
                 this.isClosed = defaults.isClosed || false;
                 this.createdAt = defaults.createdAt || new Date();
@@ -101,23 +130,23 @@
             return Bug;
         });
 
-        bugTrackerApp.factory("bugsCollection", function(Bug){
-            var list = [
-                new Bug({ name : "User authentication failure"}),
-                new Bug({ name : "Server communication erratic", isCompleted : true}),
-                new Bug({ name : "Control alignment not right"}),
-            ];
+        bugTrackerApp.factory("bugsCollection", function(bugStorageService, Bug){
+
+            var list = bugStorageService.getAll();
             function add(name){
-                var newBug = new Bug({name : name});
+                var newBug = bugStorageService.save(new Bug({name : name}));
                 list.push(newBug);
             }
             function removeClosed(){
                 for(var i=list.length -1; i>= 0; i--)
-                    if (list[i].isClosed)
-                        list.splice(i,1);
+                    if (list[i].isClosed){
+                        bugStorageService.remove(list[i].id)
+                         list.splice(i,1);
+                    }
             }
             function toggle(bug){
                 bug.toggle();
+                bugStorageService.save(bug);
             }
             return {
                 list : list,
