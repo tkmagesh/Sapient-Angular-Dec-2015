@@ -1,7 +1,28 @@
 {
-    "bugs" :[
-        {"id" : 1, "name" : "Server communication failure", "isClosed" : false, "createdAt" : "2015-12-10T09:23:53.610Z"},
-        {"id" : 2, "name" : "Data validation error", "isClosed" : false, "createdAt" : "2015-12-10T11:23:53.610Z"},
-        {"id" : 3, "name" : "Authentication failure", "isClosed" : false, "createdAt" : "2015-12-10T10:23:53.610Z"}
-    ]
+  "bugs": [
+    {
+      "id": 1,
+      "name": "Server communication failure",
+      "isClosed": false,
+      "createdAt": "2015-12-10T09:23:53.610Z"
+    },
+    {
+      "id": 2,
+      "name": "Data validation error",
+      "isClosed": false,
+      "createdAt": "2015-12-10T11:23:53.610Z"
+    },
+    {
+      "id": 3,
+      "name": "Authentication failure",
+      "isClosed": false,
+      "createdAt": "2015-12-10T10:23:53.610Z"
+    },
+    {
+      "id": 4,
+      "name": "Server communication failure",
+      "isClosed": false,
+      "createdAt": "2015-12-11T09:23:53.610Z"
+    }
+  ]
 }
