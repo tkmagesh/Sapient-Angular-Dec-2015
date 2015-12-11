@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Directives</title>
+    <script src="angular.js"></script>
+    <script>
+        var myApp = angular.module("myApp", []);
+        myApp.directive("helloworld", function(){
+            return {
+                scope : {
+                    message : '=',
+                    onclear : '&'
+                },
+                restrict : 'E',
+                template : "<h1>{{message}}</h1><input type='button' value='Clear' ng-click='clearMessage()'>",
+                controller : function($scope){
+                    $scope.clearMessage = function(){
+                        $scope.message= '';
+                        $scope.onclear();
+                    }
+                },
+                compile : function(scope, element, attr){
+
+                }
+            }
+        });
+    </script>
+</head>
+<body ng-app="myApp">
+    <span>Message :</span>
+    <input type="text" ng-model='appMessage'>
+    <helloworld message='appMessage' onclear="directiveAction = 'message cleared'"></helloworld>
+    <div>{{directiveAction}}</div>
+</body>
+</html>

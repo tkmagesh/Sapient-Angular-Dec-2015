@@ -49,8 +49,8 @@
     6. Sort the bug - done
     7. Improvise the bug display - done
     8. Display the 'createdAt' for all the bugs - done
-    9. Persist the bugs in 'localStorage' - done
-    10. Persist the bugs in the server - done
+    9. Persist the bugs in 'localStorage'
+    10. Persist the bugs in the server
     11. Categorize the bugs
     12. Allow the user to navigate by category
     -->
@@ -81,6 +81,85 @@
         /* Bug Tracker */
 
         var bugTrackerApp = angular.module("bugTrackerApp", ["utils"]);
+        /*bugTrackerApp.value("Bug", function Bug(name){
+            this.name = name;
+            this.isClosed = false;
+            this.toggle = function(){
+                this.isClosed = !this.isClosed;
+            }
+        });*/
+
+
+        //bugStorageService as a 'factory'
+        bugTrackerApp.provider("bugStorage", function(defaultStorage){
+            var storage = null;
+            var _storageChoice = defaultStorage;
+            return {
+                setStorage : function(storageChoice){
+                    _storageChoice = storageChoice;
+                },
+                $get : function(Bug, $window){
+                    storage = _storageChoice === 'local' ? $window.localStorage : $window.sessionStorage;
+                    var maxBugId = 0;
+                    return {
+                        getAll : function(){
+                            var result = [];
+                            for(var i=0; i<storage.length; i++){
+                                var key = storage.key(i);
+                                var bugAsString = storage.getItem(key);
+                                var bug = new Bug(angular.fromJson(bugAsString));
+                                maxBugId = maxBugId < bug.id ? bug.id : maxBugId;
+                                result.push(bug);
+                            }
+                            return result;
+                        },
+                        save : function(bug){
+                            if (bug.id === 0){
+                                bug.id = ++maxBugId;
+                            }
+                            storage.setItem(bug.id, angular.toJson(bug));
+                            return bug;
+                        },
+                        remove : function(id){
+                            storage.removeItem(id);
+                        }
+                    } ;
+                }
+            }
+        });
+        bugTrackerApp.constant('defaultStorage', 'session')
+
+        bugTrackerApp.config(function(bugStorageProvider, BugProvider, defaultStorage){
+            console.log('BugProvider -> ', BugProvider);
+           //bugStorageProvider.setStorage(defaultStorage);
+        });
+        //bugStorageService as a 'service'
+        /*bugTrackerApp.service("bugStorageService", function(Bug, $window){
+            var storage = $window.localStorage;
+            var maxBugId = 0;
+
+            this.getAll = function(){
+                var result = [];
+                for(var i=0; i<storage.length; i++){
+                    var key = storage.key(i);
+                    var bugAsString = storage.getItem(key);
+                    var bug = new Bug(angular.fromJson(bugAsString));
+                    maxBugId = maxBugId < bug.id ? bug.id : maxBugId;
+                    result.push(bug);
+                }
+                return result;
+            };
+            this.save = function(bug){
+                if (bug.id === 0){
+                    bug.id = ++maxBugId;
+                }
+                storage.setItem(bug.id, angular.toJson(bug));
+                return bug;
+            };
+            this.remove = function(id){
+                storage.removeItem(id);
+            }
+        });*/
 
         bugTrackerApp.factory("Bug", function BugFactory(){
             function Bug(defaults){
@@ -95,95 +174,34 @@
             return Bug;
         });
 
-        /*bugTrackerApp.service("bugsCollection", function(Bug, $http){
+        bugTrackerApp.factory("bugsCollection", function(bugStorage, Bug){
 
-            var self = this;
-
-            var list = [];
-
-            var promise = $http.get('http://localhost:3000/bugs');
-            promise.then(function(response){
-                self.list = response.data;
-            });
-
-            this.add = function add(name){
-
-            }
-            this.removeClosed = function removeClosed(){
-
-            }
-            this.toggle = function toggle(bug){
-                bug.toggle();
-
-            }
-        });*/
-
-        bugTrackerApp.service("bugService", ['$http','Bug','$q', function($http, Bug, $q){
-            var list = [];
-            this.getAll = function(){
-                /*var deferred = $q.defer();
-
-                var promise = $http.get("http://localhost:3000/bugs");
-                promise.then(function(response){
-                    var result = response.data.map(function(bugData){
-                        return new Bug(bugData);
-                    });
-                    deferred.resolve(result);
-                });
-
-                return deferred.promise;*/
-
-                return $http.get("http://localhost:3000/bugs")
-                    .then(function(response){
-                        var result = response.data.map(function(bugData){
-                            return new Bug(bugData);
-                        });
-                        return result;
-                    });
-            }
-        }])
-
-         bugTrackerApp.factory("bugsCollection", function(bugService, $http, Bug){
-
-            var list = [];
-            bugService.getAll().then(function(bugs){
-                bugs.forEach(function(bug){
-                    list.push(bug);
-                });
-            });
-
+            var list = bugStorage.getAll();
             function add(name){
-                var bug = new Bug({name : name});
-                var promise = $http.post("http://localhost:3000/bugs", bug);
-                promise.then(function(response){
-                    list.push(new Bug(response.data));
-                });
+                var newBug = bugStorage.save(new Bug({name : name}));
+                list.push(newBug);
             }
             function removeClosed(){
-                for(var i=list.length-1; i>=0; i--){
-                    var bug = list[i];
-                    if (bug.isClosed){
-                        $http.delete("http://localhost:3000/bugs/" + bug.id);
-                        list.splice(i,1);
+                for(var i=list.length -1; i>= 0; i--)
+                    if (list[i].isClosed){
+                        bugStorage.remove(list[i].id)
+                         list.splice(i,1);
                     }
-                }
             }
             function toggle(bug){
                 bug.toggle();
-                $http.put("http://localhost:3000/bugs/" + bug.id, bug);
+                bugStorage.save(bug);
             }
-            var result = {
+            return {
                 list : list,
                 add : add,
                 toggle : toggle,
                 removeClosed : removeClosed,
-            };
-            return result;
+            }
         });
 
         bugTrackerApp.controller("bugsController", function($scope, bugsCollection){
             $scope.newBugName = '';
-
             $scope.bugs = bugsCollection;
             $scope.addNew = function(){
                 bugsCollection.add($scope.newBugName);
@@ -194,13 +212,32 @@
 
         bugTrackerApp.filter("toClosedCount", function(){
             return function(bugs){
-                /*return bugs.reduce(function(result, bug){
+                return bugs.reduce(function(result, bug){
                     return bug.isClosed ? ++result : result;
-                },0);*/
-                return 0;
+                },0);
             }
         });
 
+        bugTrackerApp.provider("test", function(){
+            console.log("in outer factory");
+            return {
+                name : 'outer factory object',
+                $get : function(){
+                    console.log("in inner factory");
+                    return {
+                        name : 'inner factory object'
+                    }
+                }
+            }
+        });
+        bugTrackerApp.config(function(testProvider){
+            console.log("in config phase");
+            console.log(testProvider);
+        });
+        bugTrackerApp.run(function(test){
+            console.log("in run phase");
+            console.log(test);
+        });
 
     </script>
 </head>
