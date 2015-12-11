@@ -118,15 +118,40 @@
             }
         });*/
 
-         bugTrackerApp.factory("bugsCollection", function($http, Bug){
+        bugTrackerApp.service("bugService", function($http, Bug, $q){
+            var list = [];
+            this.getAll = function(){
+                /*var deferred = $q.defer();
+
+                var promise = $http.get("http://localhost:3000/bugs");
+                promise.then(function(response){
+                    var result = response.data.map(function(bugData){
+                        return new Bug(bugData);
+                    });
+                    deferred.resolve(result);
+                });
+
+                return deferred.promise;*/
+
+                return $http.get("http://localhost:3000/bugs")
+                    .then(function(response){
+                        var result = response.data.map(function(bugData){
+                            return new Bug(bugData);
+                        });
+                        return result;
+                    });
+            }
+        })
+
+         bugTrackerApp.factory("bugsCollection", function(bugService, $http, Bug){
 
             var list = [];
-            var promise = $http.get("http://localhost:3000/bugs");
-            promise.then(function(response){
-                response.data.forEach(function(bugData){
-                    list.push(new Bug(bugData));
+            bugService.getAll().then(function(bugs){
+                bugs.forEach(function(bug){
+                    list.push(bug);
                 });
             });
+
             function add(name){
                 var bug = new Bug({name : name});
                 var promise = $http.post("http://localhost:3000/bugs", bug);
@@ -147,12 +172,13 @@
                 bug.toggle();
                 $http.put("http://localhost:3000/bugs/" + bug.id, bug);
             }
-            return {
+            var result = {
                 list : list,
                 add : add,
                 toggle : toggle,
                 removeClosed : removeClosed,
-            }
+            };
+            return result;
         });
 
         bugTrackerApp.controller("bugsController", function($scope, bugsCollection){
